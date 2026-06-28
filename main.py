@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AI文献阅读助手 - 主入口
+AI文献阅读助手 - 主入口（免费使用 DeepSeek 模型）
 用于阅读长文献，并提取出有助于写作时能使用的部分
 
 使用方法:
@@ -39,10 +39,12 @@ def check_config():
             "请按照以下步骤配置：\n"
             "1. 复制 .env.example 为 .env\n"
             "2. 在 .env 文件中填入你的 API Key\n\n"
-            "支持的API：\n"
-            "- OpenAI (OPENAI_API_KEY)\n"
+            "[bold green]推荐：使用 DeepSeek（新用户免费额度）[/bold green]\n"
+            "- 注册 DeepSeek 获取免费额度：https://platform.deepseek.com/\n"
+            "- 在 .env 中填入 DEEPSEEK_API_KEY\n\n"
+            "备选方案：\n"
             "- Moonshot/Kimi (MOONSHOT_API_KEY)\n"
-            "- DeepSeek (DEEPSEEK_API_KEY)",
+            "- OpenAI (OPENAI_API_KEY)",
             title="配置错误",
             border_style="red"
         ))
@@ -114,8 +116,15 @@ def main():
         sys.exit(1)
     
     # 显示配置信息
+    provider = config.current_provider
+    model = config.current_model
+    cost_info = ""
+    if provider == "DeepSeek":
+        cost_info = "\n[green]💰 费用[/green]: 使用 DeepSeek 免费额度（新用户赠送约 50 万 Token）"
+    
     console.print(Panel(
-        f"[green]模型[/green]: {config.MODEL_NAME}\n"
+        f"[green]提供商[/green]: {provider}\n"
+        f"[green]模型[/green]: {model}{cost_info}\n"
         f"[green]分析模式[/green]: {args.mode}\n"
         f"[green]输出语言[/green]: {args.language}\n"
         f"[green]输出格式[/green]: {args.format}",
