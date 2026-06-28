@@ -5,16 +5,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    """配置管理类"""
+    """配置管理类 - 默认使用 DeepSeek 免费模型"""
     
-    # AI API配置
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY", "")
+    # AI API配置（优先级：DeepSeek > Moonshot > OpenAI）
     DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+    MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY", "")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     
-    # 模型配置
-    OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-    MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+    # 模型配置（默认 DeepSeek）
+    OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.deepseek.com/v1")
+    MODEL_NAME = os.getenv("MODEL_NAME", "deepseek-chat")
     
     # 文本处理配置
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "4000"))
@@ -27,33 +27,57 @@ class Config:
     
     @property
     def api_key(self) -> str:
-        """获取优先级最高的API Key"""
-        for key in [self.OPENAI_API_KEY, self.MOONSHOT_API_KEY, self.DEEPSEEK_API_KEY]:
+        """获取优先级最高的API Key（DeepSeek优先）"""
+        for key in [self.DEEPSEEK_API_KEY, self.MOONSHOT_API_KEY, self.OPENAI_API_KEY]:
             if key:
                 return key
         return ""
     
     @property
-    def use_moonshot(self) -> bool:
-        return bool(self.MOONSHOT_API_KEY and not self.OPENAI_API_KEY)
+    def current_provider(self) -> str:
+        """返回当前使用的AI提供商名称"""
+        if self.DEEPSEEK_API_KEY:
+            return "DeepSeek"
+        elif self.MOONSHOT_API_KEY:
+            return "Moonshot"
+        elif self.OPENAI_API_KEY:
+            return "OpenAI"
+        return "未配置"
+    
+    @property
+    def current_model(self) -> str:
+        """返回当前实际使用的模型名称"""
+        if self.DEEPSEEK_API_KEY:
+            return "deepseek-chat"
+        elif self.MOONSHOT_API_KEY:
+            return "moonshot-v1-8k"
+        return self.MODEL_NAME
     
     @property
     def use_deepseek(self) -> bool:
-        return bool(self.DEEPSEEK_API_KEY and not self.OPENAI_API_KEY and not self.MOONSHOT_API_KEY)
+        return bool(self.DEEPSEEK_API_KEY)
+    
+    @property
+    def use_moonshot(self) -> bool:
+        return bool(self.MOONSHOT_API_KEY and not self.DEEPSEEK_API_KEY)
+    
+    @property
+    def use_openai(self) -> bool:
+        return bool(self.OPENAI_API_KEY and not self.DEEPSEEK_API_KEY and not self.MOONSHOT_API_KEY)
     
     def get_model_config(self) -> dict:
-        """获取模型配置"""
-        if self.use_moonshot:
-            return {
-                "api_key": self.MOONSHOT_API_KEY,
-                "base_url": "https://api.moonshot.cn/v1",
-                "model": "moonshot-v1-8k"
-            }
-        elif self.use_deepseek:
+        """获取模型配置（DeepSeek 为默认）"""
+        if self.use_deepseek:
             return {
                 "api_key": self.DEEPSEEK_API_KEY,
                 "base_url": "https://api.deepseek.com/v1",
                 "model": "deepseek-chat"
+            }
+        elif self.use_moonshot:
+            return {
+                "api_key": self.MOONSHOT_API_KEY,
+                "base_url": "https://api.moonshot.cn/v1",
+                "model": "moonshot-v1-8k"
             }
         else:
             return {

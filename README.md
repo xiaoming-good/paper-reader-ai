@@ -1,6 +1,7 @@
-# AI文献阅读助手 (Paper Reader AI)
+# AI文献阅读助手 (Paper Reader AI) — 免费使用 DeepSeek 模型
 
 > 用于阅读长文献，并提取出有助于写作时能使用的部分
+> **现已默认支持 DeepSeek 免费额度，无需信用卡即可使用！**
 
 ## 功能特点
 
@@ -10,6 +11,7 @@
 - 生成写作素材卡片：可引用语句、论点支持、方法参考
 - 支持批量处理多篇文献
 - 提供结构化输出，便于直接用于论文写作
+- **🎉 免费使用**：默认接入 DeepSeek 模型，新用户注册即享免费额度
 
 ## 快速开始
 
@@ -19,20 +21,29 @@
 pip install -r requirements.txt
 ```
 
-### 2. 配置API密钥
+### 2. 配置API密钥（推荐 DeepSeek，免费！）
 
 复制 `.env.example` 为 `.env`，并填入你的API密钥：
 
 ```bash
 cp .env.example .env
-# 编辑 .env 文件，填入你的 API Key
+# 编辑 .env 文件
 ```
 
-支持的AI模型（配置其一即可）：
-- **OpenAI**: `OPENAI_API_KEY`
-- **Moonshot (Kimi)**: `MOONSHOT_API_KEY`
-- **DeepSeek**: `DEEPSEEK_API_KEY`
-- **本地模型**: 支持通过 `OPENAI_BASE_URL` 配置本地兼容OpenAI API的模型
+#### 推荐方案：DeepSeek（免费额度）
+
+1. 访问 [DeepSeek 开放平台](https://platform.deepseek.com/) 注册账号
+2. 新用户注册即赠送 **10 元免费额度**（约 50 万 Token）
+3. 在 `.env` 中填入：
+   ```
+   DEEPSEEK_API_KEY=sk-xxxxxxxx
+   ```
+
+#### 备选方案
+
+- **Moonshot (Kimi)**：填入 `MOONSHOT_API_KEY`
+- **OpenAI**：填入 `OPENAI_API_KEY`（需海外信用卡，按量付费）
+- **本地模型**：通过 `OPENAI_BASE_URL` 配置兼容 OpenAI API 的本地模型
 
 ### 3. 使用方式
 
@@ -64,31 +75,35 @@ print(result.writing_materials)
 分析完成后，会生成包含以下内容的结构化报告：
 
 ```markdown
-# 文献分析：xxx
+# 文献深度分析报告
 
-## 基本信息
-- 标题：xxx
-- 作者：xxx
-- 摘要：xxx
+> **文献**: xxx
+> **文件**: paper.pdf
 
-## 核心观点
-1. ...
-2. ...
+---
 
-## 可引用语句（带页码）
-> "..." (p.5)
+## 1. 文献概览
+- 研究主题/问题
+- 核心贡献
 
-## 研究方法参考
-- 方法：xxx
-- 适用场景：xxx
+## 2. 核心论点总结（适合用于文献综述）
+- 分点列出，每个论点带简要说明
 
-## 数据与证据
-- 关键数据：xxx
-- 数据来源：xxx
+## 3. 可引用素材（按主题分类）
+- 直接可用于引用的句子（带建议的引用位置说明）
 
-## 对写作的帮助
-- 可用于支持论点：xxx
-- 可对比的观点：xxx
+## 4. 研究方法参考
+- 使用了什么方法
+- 适合借鉴到我研究中的方法
+
+## 5. 数据与证据
+- 关键实验结果和数据
+- 可用于支撑我论点的证据
+
+## 6. 写作应用建议
+- 在我的写作中，可以如何使用这篇文献
+- 可以与哪些观点形成对比/支撑
+- 潜在的批评角度
 ```
 
 ## 项目结构
@@ -96,9 +111,9 @@ print(result.writing_materials)
 ```
 paper-reader-ai/
 ├── main.py                  # 主入口（CLI）
-├── config.py                # 配置管理
+├── config.py                # 配置管理（默认 DeepSeek）
 ├── requirements.txt         # 依赖
-├── .env.example            # 环境变量示例
+├── .env.example            # 环境变量示例（推荐 DeepSeek）
 ├── README.md               # 本文件
 ├── paper_reader/           # 核心库
 │   ├── __init__.py
@@ -112,14 +127,15 @@ paper-reader-ai/
 
 ## 部署方式
 
-### 方式一：本地使用（最简单）
+### 方式一：本地使用（最简单，免费）
 
-直接克隆仓库，安装依赖即可使用。
+直接克隆仓库，配置 DeepSeek 免费额度即可使用。
 
 ```bash
 git clone https://github.com/xiaoming-good/paper-reader-ai.git
 cd paper-reader-ai
 pip install -r requirements.txt
+# 配置 .env 中的 DEEPSEEK_API_KEY
 python main.py --input your_paper.pdf
 ```
 
@@ -128,6 +144,7 @@ python main.py --input your_paper.pdf
 项目支持通过 `gradio` 快速搭建Web界面：
 
 ```bash
+pip install gradio
 python web_app.py
 # 访问 http://localhost:7860
 ```
@@ -136,7 +153,7 @@ python web_app.py
 
 ```bash
 docker build -t paper-reader .
-docker run -v ./papers:/app/papers -e OPENAI_API_KEY=xxx paper-reader
+docker run -v ./papers:/app/papers -e DEEPSEEK_API_KEY=sk-xxx paper-reader
 ```
 
 ## 配置说明
@@ -145,14 +162,25 @@ docker run -v ./papers:/app/papers -e OPENAI_API_KEY=xxx paper-reader
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `OPENAI_API_KEY` | OpenAI API密钥 | - |
+| `DEEPSEEK_API_KEY` | **推荐** DeepSeek API密钥 | - |
 | `MOONSHOT_API_KEY` | Moonshot API密钥 | - |
-| `DEEPSEEK_API_KEY` | DeepSeek API密钥 | - |
-| `OPENAI_BASE_URL` | 自定义API端点 | https://api.openai.com/v1 |
-| `MODEL_NAME` | 模型名称 | gpt-4o-mini |
+| `OPENAI_API_KEY` | OpenAI API密钥 | - |
+| `OPENAI_BASE_URL` | 自定义API端点 | `https://api.deepseek.com/v1` |
+| `MODEL_NAME` | 模型名称 | `deepseek-chat` |
 | `CHUNK_SIZE` | 文本分块大小 | 4000 |
 | `CHUNK_OVERLAP` | 分块重叠大小 | 200 |
 | `OUTPUT_LANGUAGE` | 输出语言 | zh |
+
+## 费用说明
+
+| 提供商 | 费用 | 说明 |
+|--------|------|------|
+| **DeepSeek** | **免费额度** | 新用户注册赠送约 50 万 Token，超量后按量付费（价格极低） |
+| Moonshot | 按量付费 | 需自行充值 |
+| OpenAI | 按量付费 | 需海外信用卡，价格较高 |
+| 本地模型 | **完全免费** | 需自行部署，适合有 GPU 的环境 |
+
+> 💡 **建议**：先用 DeepSeek 免费额度体验，超量后再考虑其他方案或充值。
 
 ## 开发计划
 
